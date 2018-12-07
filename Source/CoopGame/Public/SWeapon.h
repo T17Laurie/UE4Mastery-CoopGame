@@ -27,6 +27,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Fire();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<UDamageType> DamageType;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
