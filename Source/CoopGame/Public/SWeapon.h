@@ -9,6 +9,8 @@
 class USkeletalMeshComponent;
 class UParticleSystem;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAmmoChangedDelegate, ASWeapon*, Weapon);
+
 UCLASS()
 class COOPGAME_API ASWeapon : public AActor
 {
@@ -22,6 +24,17 @@ public:
 	virtual void StartFire();
 
 	virtual void StopFire();
+
+	virtual void Reload();
+
+	UFUNCTION(BlueprintPure)
+	int32 GetCurrentAmmo()		{ return CurrentAmmo; }
+	
+	UFUNCTION(BlueprintPure)
+	int32 GetAmmoCapacity()		{ return AmmoCapacity; }
+
+	UPROPERTY(BlueprintAssignable)
+	FAmmoChangedDelegate OnAmmoChanged;
 
 protected:
 
@@ -39,6 +52,16 @@ protected:
 
 	// Derived from RateOfFire
 	float TimeBetweenShots;
+
+	// Ammo
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	int32 AmmoCapacity;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	int32 CurrentAmmo;
+
+	void SetCurrentAmmo(int32 NewAmmoAmt);
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* MeshComp;

@@ -27,6 +27,8 @@ ASWeapon::ASWeapon()
 	TracerTargetName = "BeamEnd";
 	BaseDamage = 20.0f;
 	RateOfFire = 600.0f;
+	AmmoCapacity = 100;
+	CurrentAmmo = 0;
 }
 
 void ASWeapon::BeginPlay()
@@ -34,6 +36,8 @@ void ASWeapon::BeginPlay()
 	Super::BeginPlay();
 
 	TimeBetweenShots = 60.0f / RateOfFire;
+
+	SetCurrentAmmo(AmmoCapacity);
 }
 
 void ASWeapon::StartFire()
@@ -48,6 +52,11 @@ void ASWeapon::StopFire()
 	GetWorldTimerManager().ClearTimer(TimerHandle_TimeBetweenShots);
 }
 
+void ASWeapon::Reload()
+{
+	SetCurrentAmmo(AmmoCapacity);
+}
+
 void ASWeapon::Fire()
 {
 	// Trace the world from pawn eyes to crosshair location
@@ -56,6 +65,12 @@ void ASWeapon::Fire()
 
 	if (MyOwner)
 	{
+		if (CurrentAmmo <= 0)
+		{
+			// TODO: Play empty sound
+			return;
+		}
+
 		FVector EyeLocation;
 		FRotator EyeRotation;
 		MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
@@ -123,9 +138,21 @@ void ASWeapon::Fire()
 
 		PlayFireEffects(TracerEndPoint);
 
+		SetCurrentAmmo(CurrentAmmo - 1);
+
 		LastFireTime = GetWorld()->TimeSeconds;
 	}
 
+}
+
+void ASWeapon::SetCurrentAmmo(int32 NewAmmoAmt)
+{
+	CurrentAmmo = NewAmmoAmt;
+
+	if (OnAmmoChanged.IsBound())
+	{
+		OnAmmoChanged.Broadcast(this);
+	}
 }
 
 void ASWeapon::PlayFireEffects(FVector TraceEnd)

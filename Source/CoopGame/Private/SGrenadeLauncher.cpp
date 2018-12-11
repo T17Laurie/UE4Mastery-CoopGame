@@ -25,6 +25,12 @@ void ASGrenadeLauncher::Fire()
 
 	if (MyOwner)
 	{
+		if (CurrentAmmo <= 0)
+		{
+			// TODO: Play empty sound
+			return;
+		}
+
 		FVector EyeLocation;
 		FRotator EyeRotation;
 		MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
@@ -55,6 +61,8 @@ void ASGrenadeLauncher::Fire()
 		{
 			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
 		}
+
+		SetCurrentAmmo(CurrentAmmo - 1);
 
 		LastFireTime = GetWorld()->TimeSeconds;
 	}

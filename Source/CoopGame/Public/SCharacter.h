@@ -48,16 +48,25 @@ protected:
 	void BeginZoom();
 	void EndZoom();
 
+	TArray<ASWeapon*> HeldWeapons;
 	ASWeapon* CurrentWeapon;
+	int32 CurrentWeaponIndex;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
-	TSubclassOf<ASWeapon> StarterWeaponClass;
+	TArray <TSubclassOf<ASWeapon> >  AvailableWeaponClasses;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
 	FName WeaponAttachSocketName;
 
+	void SelectWeapon(int32 WeaponIndex);
 	void StartFire();
 	void StopFire();
+	void ReloadWeapon();
+	void NextWeapon();
+	void PrevWeapon();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnWeaponAmmoChanged(ASWeapon* Weapon);
 
 public:	
 	// Called every frame

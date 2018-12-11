@@ -36,16 +36,7 @@ void ASCharacter::BeginPlay()
 	DefaultFOV = CameraComp->FieldOfView;
 
 	// Spawn a default weapon
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	CurrentWeapon = GetWorld()->SpawnActor<ASWeapon>(StarterWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->SetOwner(this);
-		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
-	}
+	SelectWeapon(0);
 }
 
 void ASCharacter::MoveForward(float Value)
@@ -78,6 +69,91 @@ void ASCharacter::EndZoom()
 	bWantsToZoom = false;
 }
 
+void ASCharacter::NextWeapon()
+{
+	int32 NewWeaponIndex = CurrentWeaponIndex + 1;
+
+	if (NewWeaponIndex >= AvailableWeaponClasses.Num())
+	{
+		NewWeaponIndex = 0;
+	}
+
+	if (NewWeaponIndex != CurrentWeaponIndex)
+	{
+		SelectWeapon(NewWeaponIndex);
+	}
+}
+
+void ASCharacter::PrevWeapon()
+{
+	int32 NewWeaponIndex = CurrentWeaponIndex - 1;
+
+	if (NewWeaponIndex < 0)
+	{
+		NewWeaponIndex = AvailableWeaponClasses.Num() - 1;
+	}
+
+	if (NewWeaponIndex != CurrentWeaponIndex)
+	{
+		SelectWeapon(NewWeaponIndex);
+	}
+}
+
+
+void ASCharacter::SelectWeapon(int32 WeaponIndex)
+{
+	if (WeaponIndex < 0 || WeaponIndex >= AvailableWeaponClasses.Num())
+		return;
+
+	TSubclassOf<ASWeapon> NewWeaponClass = AvailableWeaponClasses[WeaponIndex];
+
+	if (CurrentWeapon != nullptr && NewWeaponClass != nullptr && CurrentWeapon->GetClass() == NewWeaponClass)
+		return;
+
+	// Deactivate any current weapon
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->SetActorHiddenInGame(true);
+		CurrentWeapon->SetActorEnableCollision(false);
+		CurrentWeapon->SetActorTickEnabled(false);
+	}
+
+	// Spawn or activate the new weapon
+	if (NewWeaponClass != nullptr)
+	{
+		if (HeldWeapons.Num() <= WeaponIndex || HeldWeapons[WeaponIndex] == nullptr)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			CurrentWeapon = GetWorld()->SpawnActor<ASWeapon>(NewWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+
+			if (CurrentWeapon)
+			{
+				CurrentWeapon->SetOwner(this);
+				CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+
+				// Hook the weapon up to the HUD and force an initial update
+				CurrentWeapon->OnAmmoChanged.AddDynamic(this, &ASCharacter::OnWeaponAmmoChanged);
+
+				// Add to held weapons
+				HeldWeapons.Insert(CurrentWeapon, WeaponIndex);
+			}
+		}
+		else
+		{
+			CurrentWeapon = HeldWeapons[WeaponIndex];
+			CurrentWeapon->SetActorHiddenInGame(false);
+			CurrentWeapon->SetActorEnableCollision(true);
+			CurrentWeapon->SetActorTickEnabled(true);
+		}
+	}
+
+	CurrentWeaponIndex = WeaponIndex;
+
+	OnWeaponAmmoChanged(CurrentWeapon);
+}
+
 void ASCharacter::StartFire()
 {
 	if (CurrentWeapon)
@@ -91,6 +167,14 @@ void ASCharacter::StopFire()
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->StopFire();
+	}
+}
+
+void ASCharacter::ReloadWeapon()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();
 	}
 }
 
@@ -127,6 +211,11 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASCharacter::StopFire);
+
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ASCharacter::ReloadWeapon);
+
+	PlayerInputComponent->BindAction("NextWeapon", IE_Pressed, this, &ASCharacter::NextWeapon);
+	PlayerInputComponent->BindAction("PreviousWeapon", IE_Pressed, this, &ASCharacter::PrevWeapon);
 }
 
 FVector ASCharacter::GetPawnViewLocation() const
