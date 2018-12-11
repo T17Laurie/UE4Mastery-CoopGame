@@ -4,7 +4,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "SWeapon.h"
+#include "CoopGame.h"
 
 
 // Sets default values
@@ -21,6 +23,9 @@ ASCharacter::ASCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
+	// Don't want the capsule component to block weapon traces (because that will stop the skeletal from being detected)
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
 	ZoomedFOV = 65.0f;
 	ZoomInterpSpeed = 20.0f;
