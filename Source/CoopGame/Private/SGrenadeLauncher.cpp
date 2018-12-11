@@ -8,6 +8,14 @@
 
 
 
+void ASGrenadeLauncher::StartFire()
+{
+	if (LastFireTime + TimeBetweenShots <= GetWorld()->TimeSeconds)
+	{
+		Fire();
+	}
+}
+
 void ASGrenadeLauncher::Fire()
 {
 	if (ProjectileClass == nullptr)
@@ -47,5 +55,7 @@ void ASGrenadeLauncher::Fire()
 		{
 			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
 		}
+
+		LastFireTime = GetWorld()->TimeSeconds;
 	}
 }

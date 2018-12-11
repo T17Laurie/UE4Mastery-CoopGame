@@ -16,6 +16,8 @@ class COOPGAME_API ASGrenadeLauncher : public ASWeapon
 
 public:
 
+	virtual void StartFire() override;
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
