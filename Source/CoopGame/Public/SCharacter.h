@@ -73,7 +73,7 @@ protected:
 	void OnWeaponAmmoChanged(ASWeapon* Weapon);
 
 	UFUNCTION()
-	void OnHealthChanged(USHealthComponent* HealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	// Pawn dies previously
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
