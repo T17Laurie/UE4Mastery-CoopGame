@@ -14,9 +14,13 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 {
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BarrelMesh"));
 	MeshComp->SetSimulatePhysics(true);
+	MeshComp->SetCollisionObjectType(ECC_PhysicsBody);
 	RootComponent = MeshComp;
 
 	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComp"));
+	RadialForceComp->bImpulseVelChange = true;
+	RadialForceComp->bAutoActivate = false;			// Prevent component from ticking, and only use FireImpulse()
+	RadialForceComp->bIgnoreOwningActor = true;
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 
@@ -24,6 +28,13 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 
 	ExplosionEffects = CreateDefaultSubobject<UParticleSystem>(TEXT("ExplosionEffects"));
 
+	Delay = 0.0f;
+	ExplosionForce = 500.0f;
+	RandomSpinMin = 0.0f;
+	RandomSpinMax = 10.0f;
+	ExplosionDamage = 100.0f;
+	InnerExplosionRadius = 50.0f;
+	OuterExplosionRadius = 200.0f;
 	bHasExploded = false;
 }
 
