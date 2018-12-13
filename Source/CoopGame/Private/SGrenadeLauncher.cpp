@@ -18,6 +18,12 @@ void ASGrenadeLauncher::StartFire()
 
 void ASGrenadeLauncher::Fire()
 {
+	// If we are the client, run the RPC to fire on the server.
+	if (Role < ROLE_Authority)
+	{
+		ServerFire();
+	}
+
 	if (ProjectileClass == nullptr)
 		return;
 

@@ -61,6 +61,12 @@ void ASWeapon::Reload()
 
 void ASWeapon::Fire()
 {
+	// If we are the client, run the RPC to fire on the server.
+	if (Role < ROLE_Authority)
+	{
+		ServerFire();
+	}
+
 	// Trace the world from pawn eyes to crosshair location
 
 	AActor* MyOwner = GetOwner();
@@ -145,6 +151,17 @@ void ASWeapon::Fire()
 		LastFireTime = GetWorld()->TimeSeconds;
 	}
 
+}
+
+void ASWeapon::ServerFire_Implementation()
+{
+	// Only the server can do the actual firing.
+	Fire();
+}
+
+bool ASWeapon::ServerFire_Validate()
+{
+	return true;
 }
 
 void ASWeapon::SetCurrentAmmo(int32 NewAmmoAmt)
