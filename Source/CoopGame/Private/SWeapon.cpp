@@ -29,6 +29,8 @@ ASWeapon::ASWeapon()
 	RateOfFire = 600.0f;
 	AmmoCapacity = 100;
 	CurrentAmmo = 0;
+
+	SetReplicates(true);
 }
 
 void ASWeapon::BeginPlay()

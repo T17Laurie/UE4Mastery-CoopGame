@@ -8,6 +8,7 @@
 #include "SHealthComponent.h"
 #include "SWeapon.h"
 #include "CoopGame.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values
@@ -40,13 +41,15 @@ ASCharacter::ASCharacter()
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 	
 	DefaultFOV = CameraComp->FieldOfView;
 
-	// Spawn a default weapon
-	SelectWeapon(0);
-
-	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+	if (Role == ROLE_Authority)
+	{
+		// Spawn a default weapon
+		SelectWeapon(0);
+	}
 }
 
 void ASCharacter::MoveForward(float Value)
@@ -254,3 +257,9 @@ FVector ASCharacter::GetPawnViewLocation() const
 	return Super::GetPawnViewLocation();
 }
 
+void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASCharacter, CurrentWeapon);
+}

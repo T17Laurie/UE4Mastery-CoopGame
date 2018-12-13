@@ -53,7 +53,10 @@ protected:
 	void EndZoom();
 
 	TArray<ASWeapon*> HeldWeapons;
+
+	UPROPERTY(Replicated)
 	ASWeapon* CurrentWeapon;
+
 	int32 CurrentWeaponIndex;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
